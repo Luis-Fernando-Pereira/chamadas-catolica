@@ -6,7 +6,7 @@ class User {
   String? password;
   bool? isOnline = false;
   String? email;
-  String? _token;
+  String? token;
   //TODO: UserType userType; 
 
 
@@ -17,9 +17,8 @@ class User {
     this.email,
     this.password,
     this.isOnline,
-    String? token
+    this.token
   }) : _id = id;
 
   int? get id => _id;
-  String? get token => _token;
 }
