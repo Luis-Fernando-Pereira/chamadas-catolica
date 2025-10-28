@@ -10,8 +10,8 @@ class Lesson {
   duration; // A classe Duration é ideal para representar um período de tempo, como minutos.
 
   // Atributos que são objetos de outras classes
-  Subject? subject;
-  Class?
+  // TODO: Subject? subject; 
+  // TODO: Class?
   assignedClass; // Usamos 'assignedClass' para evitar conflito com a palavra-chave 'class'.
   LessonStatus? lessonStatus;
   ClassRoom? classRoom; // Pode ser nulo para aulas online

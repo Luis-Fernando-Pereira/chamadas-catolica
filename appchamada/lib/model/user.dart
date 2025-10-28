@@ -20,5 +20,9 @@ class User {
     this.token
   }) : _id = id;
 
+  User.idOnly({
+    required id
+  }) : _id = id;
+
   int? get id => _id;
 }
