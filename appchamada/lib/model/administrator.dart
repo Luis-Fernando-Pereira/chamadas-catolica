@@ -22,5 +22,13 @@ class Administrator extends User{
     return selectedClass;
   }
 
+  AssignedClass createClass(String className) {
+    AssignedClass assignedClass = AssignedClass(className);
+
+    //TODO: salvar no banco de dados
+
+    return assignedClass;
+  }
+
 
 }
