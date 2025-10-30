@@ -2,13 +2,13 @@
 
 import 'user.dart';
 import 'course.dart';
-import 'class_model.dart';
+import 'assigned_class.dart';
 
 // import 'roll_call.dart';
 
 class Student extends User {
   Course? course;
-  ClassModel? assignedClass;
+  AssignedClass? assignedClass;
   int? semester;
 
   Student({

@@ -1,8 +1,11 @@
+import 'package:appchamada/model/assigned_class.dart';
+import 'package:appchamada/model/lesson.dart';
+import 'package:appchamada/model/lesson_status.dart';
 import 'package:appchamada/model/user.dart';
 
 class Administrator extends User{
   
-  Administrator({required int id}) : super.idOnly(id: id);
+  Administrator({required super.id});
 
   Administrator.user({
     required super.id, 
@@ -14,21 +17,14 @@ class Administrator extends User{
     super.username 
   });
 
-  AssignedClass changeClassStatus(AssignedClass selectedClass, ClassStatus classStatus) {
-    selectedClass.status = classStatus;
+  Lesson changeClassStatus(Lesson lesson, LessonStatus lessonStatus) {
+    lesson.lessonStatus = lessonStatus;
 
-    //TODO: salvar no banco de dados
-
-    return selectedClass;
+    return lesson;
   }
 
-  AssignedClass createClass(String className) {
-    AssignedClass assignedClass = AssignedClass(className);
-
-    //TODO: salvar no banco de dados
-
-    return assignedClass;
-  }
+  AssignedClass createClass(String className, int classId) => AssignedClass(id: classId, name: className);
+  
 
 
 }

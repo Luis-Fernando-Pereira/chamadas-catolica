@@ -1,4 +1,7 @@
-import 'class_model.dart';
+import 'package:appchamada/model/class_room.dart';
+import 'package:appchamada/model/subject.dart';
+
+import 'assigned_class.dart';
 import 'lesson_status.dart';
 //import 'class_room.dart';
 //import 'subject.dart';
@@ -10,8 +13,7 @@ class Lesson {
   duration; // A classe Duration é ideal para representar um período de tempo, como minutos.
 
   Subject? subject;
-  ClassModel?
-  assignedClass; // Usamos 'assignedClass' para evitar conflito com a palavra-chave 'class'.
+  AssignedClass? assignedClass; // Usamos 'assignedClass' para evitar conflito com a palavra-chave 'class'.
   LessonStatus? lessonStatus;
   ClassRoom? classRoom;
 
