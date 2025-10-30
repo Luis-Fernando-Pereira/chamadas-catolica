@@ -1,5 +1,5 @@
-//import 'class_model.dart';
-//import 'lesson_status.dart';
+import 'class_model.dart';
+import 'lesson_status.dart';
 //import 'class_room.dart';
 //import 'subject.dart';
 
@@ -9,12 +9,11 @@ class Lesson {
   Duration?
   duration; // A classe Duration é ideal para representar um período de tempo, como minutos.
 
-  // Atributos que são objetos de outras classes
-  // TODO: Subject? subject; 
-  // TODO: Class?
+  Subject? subject;
+  ClassModel?
   assignedClass; // Usamos 'assignedClass' para evitar conflito com a palavra-chave 'class'.
   LessonStatus? lessonStatus;
-  ClassRoom? classRoom; // Pode ser nulo para aulas online
+  ClassRoom? classRoom;
 
   // Construtor da classe
   Lesson({
@@ -27,6 +26,5 @@ class Lesson {
     this.classRoom,
   }) : _id = id;
 
-  // Getter público para o id
   int? get id => _id;
 }

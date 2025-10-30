@@ -1,3 +1,4 @@
+import 'user_type.dart';
 
 class User {
   final int? _id;
@@ -7,8 +8,8 @@ class User {
   bool? isOnline = false;
   String? email;
   String? token;
-  //TODO: UserType userType; 
-
+  UserType? userType;
+  //TODO: UserType userType;
 
   User({
     required id,
@@ -17,12 +18,11 @@ class User {
     this.email,
     this.password,
     this.isOnline,
-    this.token
+    this.token,
+    this.userType,
   }) : _id = id;
 
-  User.idOnly({
-    required id
-  }) : _id = id;
+  User.idOnly({required id}) : _id = id;
 
   int? get id => _id;
 }
