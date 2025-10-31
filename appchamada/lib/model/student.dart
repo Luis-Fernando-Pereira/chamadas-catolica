@@ -1,10 +1,10 @@
 // lib/model/student.dart
+import 'dart:convert';
+import 'package:appchamada/model/assigned_class.dart';
+import 'package:appchamada/model/course.dart';
+import 'package:appchamada/model/user_type.dart';
 
 import 'user.dart';
-import 'course.dart';
-import 'assigned_class.dart';
-
-// import 'roll_call.dart';
 
 class Student extends User {
   Course? course;
@@ -19,37 +19,49 @@ class Student extends User {
     String? password,
     bool? isOnline,
     String? token,
-
-    // O UserType de um Student será sempre UserType.STUDENT
-    // Poderíamos fixar isso aqui, se quiséssemos.
     this.course,
     this.assignedClass,
     this.semester,
   }) : super(
-         id: id,
-         name: name,
-         username: username,
-         email: email,
-         password: password,
-         isOnline: isOnline,
-         token: token,
-         // userType: UserType.STUDENT, // Atribuição fixa do tipo de usuário
-       );
+          id: id,
+          name: name,
+          username: username,
+          email: email,
+          password: password,
+          isOnline: isOnline,
+          token: token,
+          userType: UserType.STUDENT
+        );
 
-  /*
-  /// Comportamento responsável por responder a uma chamada, aplicando as devidas regras de negócio.
-  /// Retorna 'true' se a presença foi confirmada com sucesso, e 'false' caso contrário.
-  bool answerRollCall(RollCall rollCall) {
-    // TODO: Implementar a lógica de negócio para responder à chamada.
-    // Exemplo de lógica:
-    // 1. Verificar se a chamada (rollCall) está aberta.
-    // 2. Verificar a geolocalização do aluno.
-    // 3. Se tudo estiver OK, registrar a presença.
-    
-    print('O aluno ${name ?? 'desconhecido'} respondeu à chamada ${rollCall.id}');
-    
-    
-    return true; 
-  }
-  */
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'username': username,
+        'email': email,
+        'password': password,
+        'isOnline': isOnline,
+        'token': token,
+        'course': course != null ? {'id': course!.id, 'name': course!.name} : null,
+        'assignedClass': assignedClass != null
+            ? {'id': assignedClass!.id, 'name': assignedClass!.name}
+            : null,
+        'semester': semester,
+      };
+
+  factory Student.fromJson(Map<String, dynamic> json) => Student(
+        id: json['id'],
+        name: json['name'],
+        username: json['username'],
+        email: json['email'],
+        password: json['password'],
+        isOnline: json['isOnline'],
+        token: json['token'],
+        course: json['course'] != null
+            ? Course(id: json['course']['id'], name: json['course']['name'])
+            : null,
+        assignedClass: json['assignedClass'] != null
+            ? AssignedClass(id: json['assignedClass']['id'], name: json['assignedClass']['name'])
+            : null,
+        semester: json['semester'],
+      );
 }

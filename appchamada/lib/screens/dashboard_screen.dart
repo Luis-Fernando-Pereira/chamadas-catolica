@@ -1,7 +1,14 @@
 // lib/screens/dashboard_screen.dart
 
+import 'package:appchamada/model/administrator.dart';
+import 'package:appchamada/model/assigned_class.dart';
+import 'package:appchamada/model/professor.dart';
+import 'package:appchamada/model/student.dart';
+import 'package:appchamada/provider/device_position_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_card_swiper/flutter_card_swiper.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 
 // Importando os modelos que criamos
 import '../model/user.dart';
@@ -27,25 +34,64 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
-  // Variáveis de estado trazidas do código do seu colega
+class _DashboardScreenState extends State<DashboardScreen> { 
+    
+  Student? student;
+  Professor? professor;
+  Administrator? administrator;
+
   List<RollCallRound> _rounds = [];
   Map<int, bool> _attendanceStatus = {};
 
+  Future<void> _handleLocationSetup() async {
+    var status = await Permission.location.status;
+
+    if (status.isDenied || status.isRestricted) {
+      status = await Permission.location.request();
+    }
+
+    if (status.isPermanentlyDenied) {
+      openAppSettings();
+      return;
+    }
+
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      await Geolocator.openLocationSettings();
+      return;
+    }
+
+    final positionProvider = context.read<DevicePositionProvider>();
+    await positionProvider.determinePosition();
+
+    print('Posição inicial: ${positionProvider.position}');
+  }
+
+
   @override
   void initState() {
-    super.initState();
-    // Lógica de inicialização das rodadas
+    super.initState();    
+    
+    switch(widget.loggedInUser.userType) {
+      case UserType.STUDENT:
+        student = Student(id: 1);
+        student?.assignedClass = AssignedClass(id: 1);
+        break;
+
+      default:
+        break;
+    }
+
     _rounds = [
       RollCallRound(1, status: RollCallStatus.active),
       RollCallRound(2),
       RollCallRound(3),
       RollCallRound(4),
-    ];
+    ];    
   }
 
   // Método para registrar presença (do código do seu colega)
   void _recordPresence(RollCallRound round) {
+    print('REGISTRANDO PRESENÇA');
     if (round.status == RollCallStatus.active) {
       setState(() {
         _attendanceStatus[round.roundNumber] = true;
@@ -192,9 +238,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ? const Icon(Icons.check_circle, color: Colors.green)
             : ElevatedButton(
                 // Habilita o botão apenas se a rodada estiver ativa
-                onPressed: round.status == RollCallStatus.active
-                    ? () => _recordPresence(round)
-                    : null,
+                onPressed: () async {
+                  await _handleLocationSetup();
+
+                  final currentPosition = context.read<DevicePositionProvider>().position;
+                  if (currentPosition == null) {
+                    print("Erro ao obter localização.");
+                    return;
+                  }
+
+                  //TODO: trocar esta longitude e latitude pela da sala de aula registrada no banco de dados
+                  const targetLatitude = -26.2494107;
+                  const targetLongitude = -48.8160327 ;
+
+                  final distanceInMeters = Geolocator.distanceBetween(
+                    currentPosition.latitude,
+                    currentPosition.longitude,
+                    targetLatitude,
+                    targetLongitude,
+                  );
+
+                  print("Distância até o destino: ${distanceInMeters.toStringAsFixed(2)} m");
+
+                  if (distanceInMeters <= 5) {
+                    if (round.status == RollCallStatus.active) {
+                      _recordPresence(round);
+                    } else {
+                      print("Rodada não está ativa.");
+                    }
+                  } else {
+                    print("Usuário não está próximo o suficiente.");
+                  }
+                },
                 child: const Text('Registrar'),
               ),
       ),

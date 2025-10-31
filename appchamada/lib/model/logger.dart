@@ -6,6 +6,9 @@ import 'dart:math'; // Usado para gerar um token aleatório simples.
 // --- DEPENDÊNCIAS ---
 // Para este código funcionar sem erros, as seguintes classes precisam existir.
 // Por enquanto, os imports e o código que depende delas ficarão comentados.
+import 'package:appchamada/model/student.dart';
+import 'package:appchamada/services/student_storage.dart';
+
 import 'user.dart';
 // import 'student.dart';
 // import 'professor.dart';
@@ -25,7 +28,20 @@ class Logger {
   Future<User?> login(String username, String password) async {
     print('Tentando login com usuário: $username');
 
-    await Future.delayed(const Duration(seconds: 1));
+    Student? student = await StudentStorage.getStudent();
+
+    if(student != null && student.username == username && student.password == password){
+      return User(
+        id: student.id,
+        email: student.email,
+        isOnline: true,
+        name: student.name,
+        password: password,
+        token: student.token,
+        userType: student.userType,
+        username: username
+      );
+    }
 
     /*
     // Lista de usuários de exemplo

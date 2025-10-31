@@ -1,14 +1,13 @@
-// lib/model/class_room.dart
+import 'package:geolocator/geolocator.dart';
 
 class ClassRoom {
   final int? _id;
 
   String? name;
 
-  String? latitude;
-  String? longitude;
+  Position? position;
 
-  ClassRoom({required int id, this.name, this.latitude, this.longitude})
+  ClassRoom({required int id, this.name, this.position})
     : _id = id;
 
   int? get id => _id;
