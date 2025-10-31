@@ -18,30 +18,34 @@ class _LoginScreenState extends State<LoginScreen> {
   void _performLogin() {
     final username = _usernameController.text;
     final password = _passwordController.text;
-    
+
     // Simulação da lógica de login (Em Memória - N2)
     // Apenas verifica se os campos não estão vazios para permitir a navegação.
-    
-    if (username.isNotEmpty && password.isNotEmpty) {
-        User user = User.idOnly(id:1);
-        user.userType = UserType.STUDENT;
 
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => DashboardScreen(loggedInUser: user,)),
-        );
+    if (username.isNotEmpty && password.isNotEmpty) {
+      User user = User.idOnly(id: 1);
+      user.userType = UserType.ADMIN;
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => DashboardScreen(loggedInUser: user),
+        ),
+      );
     } else {
       // Feedback visual simples para simulação
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Insira usuário e senha para simular login.')),
+        const SnackBar(
+          content: Text('Insira usuário e senha para simular login.'),
+        ),
       );
     }
   }
 
   void _goToRegistration() {
     // Navegação para a tela de cadastro de estudante
-    Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => const RegistrationScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const RegistrationScreen()));
   }
 
   @override
