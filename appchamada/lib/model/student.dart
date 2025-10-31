@@ -2,13 +2,14 @@
 
 import 'user.dart';
 import 'course.dart';
-import 'assigned_class.dart';
+import 'class_model.dart';
+import 'user_type.dart';
 
 // import 'roll_call.dart';
 
 class Student extends User {
   Course? course;
-  AssignedClass? assignedClass;
+  ClassModel? assignedClass;
   int? semester;
 
   Student({
@@ -19,6 +20,7 @@ class Student extends User {
     String? password,
     bool? isOnline,
     String? token,
+    UserType? userType,
 
     // O UserType de um Student será sempre UserType.STUDENT
     // Poderíamos fixar isso aqui, se quiséssemos.
@@ -33,7 +35,7 @@ class Student extends User {
          password: password,
          isOnline: isOnline,
          token: token,
-         // userType: UserType.STUDENT, // Atribuição fixa do tipo de usuário
+         userType: userType,
        );
 
   /*
