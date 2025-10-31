@@ -1,17 +1,19 @@
 // lib/screens/dashboard_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 
 // PLACEHOLDERS: Você deve mover estas classes e enum para lib/model/
 enum RollCallStatus { pending, active, closed }
 
-class RollCallRound {
+class RollCallRound extends Container{
   final int roundNumber;
-  RollCallStatus status;
+  final RollCallStatus status;
+
 
   RollCallRound(this.roundNumber, {this.status = RollCallStatus.pending});
+
 }
-// FIM DOS PLACEHOLDERS
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -21,17 +23,42 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  List<RollCallRound> _rounds = [];
+  List<Container> _rounds = [];
+  final CardSwiperController controller = CardSwiperController();
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
   Map<int, bool> _attendanceStatus = {};
 
   @override
   void initState() {
     super.initState();
-    _rounds = [
-      RollCallRound(1, status: RollCallStatus.active),
-      RollCallRound(2),
-      RollCallRound(3),
-      RollCallRound(4),
+    _rounds = [      
+      Container(
+        width: 200,
+        height: 200,
+        alignment: Alignment.center,
+        color: Colors.blue,
+        child: const Text('1'),
+      ),
+      Container(
+        width: 200,
+        height: 200,
+        alignment: Alignment.center,
+        color: Colors.red,
+        child: const Text('2'),
+      ),
+      Container(
+        width: 200,
+        height: 200,
+        alignment: Alignment.center,
+        color: Colors.purple,
+        child: const Text('3'),
+      )
     ];
   }
 
@@ -96,10 +123,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard de Chamadas'),
+        backgroundColor: Colors.black,
+        title: const Text('Dashboard de Chamadas',
+          style: TextStyle(color: Colors.white),),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history),
+            icon: const Icon(Icons.history, 
+            color: Colors.white,),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Navegar para Histórico (Futuro)')),
@@ -108,37 +138,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            const Text(
-              'Status das 4 Rodadas de Hoje:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            ..._rounds.map(_buildRoundCard).toList(),
-            const SizedBox(height: 30),
-            const Text(
-              'Status Consolidado:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              'Presenças Registradas: ${_attendanceStatus.values.where((v) => v).length} de 4',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 30),
-             ElevatedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Layout CSV PREVISTO (Funcionalidade na N3)')),
-                );
-              },
-              icon: const Icon(Icons.download),
-              label: const Text('Prever Layout CSV'),
-            ),
-          ],
+      body: Flexible(
+        child: CardSwiper(
+          controller: controller,
+          cardsCount: _rounds.length,
+          cardBuilder: (context, index, percentThresholdX, percentThresholdY) => _rounds[index],
         ),
       ),
     );
