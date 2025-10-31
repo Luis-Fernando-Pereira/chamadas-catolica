@@ -19,6 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../model/user.dart';
 import '../model/user_type.dart';
 import 'class_registration_screen.dart';
+import 'course_list_screen.dart';
 // ... outros modelos que você precisar
 
 // Classes de placeholder movidas do código original. O ideal é movê-las para /model
@@ -29,7 +30,11 @@ class RollCallRound extends Container {
   final RollCallStatus status;
   final Lesson lesson;
 
-  RollCallRound(this.roundNumber, {this.status = RollCallStatus.pending, required this.lesson});
+  RollCallRound(
+    this.roundNumber, {
+    this.status = RollCallStatus.pending,
+    required this.lesson,
+  });
 }
 // Fim dos placeholders
 
@@ -41,8 +46,7 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> { 
-    
+class _DashboardScreenState extends State<DashboardScreen> {
   Student? student;
   Professor? professor;
   Administrator? administrator;
@@ -74,12 +78,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     print('Posição inicial: ${positionProvider.position}');
   }
 
-
   @override
   void initState() {
-    super.initState();    
+    super.initState();
 
-    switch(widget.loggedInUser.userType) {
+    switch (widget.loggedInUser.userType) {
       case UserType.STUDENT:
         student = Student(id: 1);
         student?.assignedClass = AssignedClass(id: 1);
@@ -109,28 +112,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
       Lesson lesson = entry.value;
 
       // Você pode definir a primeira aula como ativa por exemplo
-      RollCallStatus status = index == 0 ? RollCallStatus.active : RollCallStatus.pending;
+      RollCallStatus status = index == 0
+          ? RollCallStatus.active
+          : RollCallStatus.pending;
 
-      return RollCallRound(
-        index + 1, 
-        status: status,
-        lesson: lesson,
-      );
+      return RollCallRound(index + 1, status: status, lesson: lesson);
     }).toList();
   }
-
 
   // Método para registrar presença (do código do seu colega)
   void _recordPresence(RollCallRound round) {
     print('REGISTRANDO PRESENÇA');
     if (round.status == RollCallStatus.active) {
       setState(() {
-        RollCallStorage.saveRollCall(RollCall(
-          id:1, 
-          lesson: round.lesson,
-          student: student!,
-          presence: true));
-          
+        RollCallStorage.saveRollCall(
+          RollCall(
+            id: 1,
+            lesson: round.lesson,
+            student: student!,
+            presence: true,
+          ),
+        );
+
         _attendanceStatus[round.roundNumber] = true;
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -148,12 +151,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _loadRollCallAttendance() async {
-    final savedRollCalls = await RollCallStorage.getRollCalls(); // Lista de RollCall
+    final savedRollCalls =
+        await RollCallStorage.getRollCalls(); // Lista de RollCall
 
     setState(() {
       for (var round in _rounds) {
         final matchingRollCall = savedRollCalls?.cast<RollCall>().firstWhere(
-          (rc) => rc.lesson.id == round.lesson.id && rc.student.id == student?.id,
+          (rc) =>
+              rc.lesson.id == round.lesson.id && rc.student.id == student?.id,
           orElse: () => RollCall(
             id: -1, // id inválido só para placeholder
             lesson: round.lesson,
@@ -168,7 +173,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -301,7 +305,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onPressed: () async {
                   await _handleLocationSetup();
 
-                  final currentPosition = context.read<DevicePositionProvider>().position;
+                  final currentPosition = context
+                      .read<DevicePositionProvider>()
+                      .position;
                   if (currentPosition == null) {
                     print("Erro ao obter localização.");
                     return;
@@ -309,7 +315,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                   //TODO: trocar esta longitude e latitude pela da sala de aula registrada no banco de dados
                   const targetLatitude = -26.2494107;
-                  const targetLongitude = -48.8160327 ;
+                  const targetLongitude = -48.8160327;
 
                   final distanceInMeters = Geolocator.distanceBetween(
                     currentPosition.latitude,
@@ -318,7 +324,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     targetLongitude,
                   );
 
-                  print("Distância até o destino: ${distanceInMeters.toStringAsFixed(2)} m");
+                  print(
+                    "Distância até o destino: ${distanceInMeters.toStringAsFixed(2)} m",
+                  );
 
                   if (distanceInMeters <= 5) {
                     if (round.status == RollCallStatus.active) {
@@ -357,6 +365,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => const ClassRegistrationScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.school),
+              title: const Text('Gerenciar Cursos'),
+              subtitle: const Text('Cadastrar e gerenciar cursos'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const CourseListScreen(),
                   ),
                 );
               },
