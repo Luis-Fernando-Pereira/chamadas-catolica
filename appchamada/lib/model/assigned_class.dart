@@ -12,4 +12,14 @@ class AssignedClass {
   AssignedClass({required int id, this.name}) : _id = id;
 
   int? get id => _id;
+
+  factory AssignedClass.fromJson(Map<String, dynamic> json) => AssignedClass(
+        id: json['id'],
+        name: json['name'],
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': _id,
+        'name': name,
+      };
 }

@@ -1,15 +1,65 @@
 import 'package:appchamada/model/assigned_class.dart';
+import 'package:appchamada/model/class_room.dart';
 import 'package:appchamada/model/course.dart';
+import 'package:appchamada/model/lesson.dart';
+import 'package:appchamada/model/lesson_status.dart';
 import 'package:appchamada/model/student.dart';
+import 'package:appchamada/model/subject.dart';
 import 'package:appchamada/model/user_type.dart';
 import 'package:appchamada/provider/device_position_provider.dart';
 import 'package:appchamada/screens/login_screen.dart';
+import 'package:appchamada/services/lesson_storage.dart';
 import 'package:appchamada/services/student_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  final subject = Subject(
+    id: 101,
+    name: 'Matemática Discreta',
+  );
+
+  // Criar a turma
+  final assignedClass = AssignedClass(
+    id: 5,
+    name: 'Turma A - Noturno',
+  );
+
+  // Criar a sala de aula
+  final classRoom = ClassRoom(
+    id: 12,
+    name: 'Sala 301',
+    position: Position(
+      longitude: -48.8102047,
+      latitude: -26.2391164,
+      timestamp: DateTime.now(),
+      accuracy: 1.0,
+      altitude: 0.0,
+      heading: 0.0,
+      speed: 0.0,
+      speedAccuracy: 0.0,
+      altitudeAccuracy: 1.0,
+      headingAccuracy: 1.0,
+    ),
+  );
+
+  // Criar a aula
+  final lesson = Lesson(
+    id: 1001,
+    start: DateTime.now().add(const Duration(hours: 1)), // começa em 1 hora
+    duration: const Duration(hours: 2), // duração de 2 horas
+    subject: subject,
+    assignedClass: assignedClass,
+    lessonStatus: LessonStatus.AGENDADO,
+    classRoom: classRoom,
+  );
+
+  LessonStorage.saveLesson(lesson);
+
+
 
   final student = Student(
     id: 1,

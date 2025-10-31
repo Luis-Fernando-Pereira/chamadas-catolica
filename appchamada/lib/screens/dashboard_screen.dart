@@ -2,13 +2,18 @@
 
 import 'package:appchamada/model/administrator.dart';
 import 'package:appchamada/model/assigned_class.dart';
+import 'package:appchamada/model/lesson.dart';
 import 'package:appchamada/model/professor.dart';
+import 'package:appchamada/model/roll_call.dart';
 import 'package:appchamada/model/student.dart';
 import 'package:appchamada/provider/device_position_provider.dart';
+import 'package:appchamada/services/lesson_storage.dart';
+import 'package:appchamada/services/roll_call_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Importando os modelos que criamos
 import '../model/user.dart';
@@ -22,8 +27,9 @@ enum RollCallStatus { pending, active, closed }
 class RollCallRound extends Container {
   final int roundNumber;
   final RollCallStatus status;
+  final Lesson lesson;
 
-  RollCallRound(this.roundNumber, {this.status = RollCallStatus.pending});
+  RollCallRound(this.roundNumber, {this.status = RollCallStatus.pending, required this.lesson});
 }
 // Fim dos placeholders
 
@@ -40,6 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Student? student;
   Professor? professor;
   Administrator? administrator;
+  List<Lesson> lessons = [];
 
   List<RollCallRound> _rounds = [];
   Map<int, bool> _attendanceStatus = {};
@@ -71,30 +78,59 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();    
-    
+
     switch(widget.loggedInUser.userType) {
       case UserType.STUDENT:
         student = Student(id: 1);
         student?.assignedClass = AssignedClass(id: 1);
         break;
-
       default:
         break;
     }
 
-    _rounds = [
-      RollCallRound(1, status: RollCallStatus.active),
-      RollCallRound(2),
-      RollCallRound(3),
-      RollCallRound(4),
-    ];    
+    _loadLessons();
   }
+
+  Future<void> _loadLessons() async {
+    final loadedLessons = await LessonStorage.getLessons();
+    setState(() {
+      lessons = loadedLessons ?? [];
+      _generateRollCallRounds();
+    });
+
+    // Atualiza a presença de acordo com os RollCalls salvos
+    await _loadRollCallAttendance();
+  }
+
+  // Cria RollCallRounds dinamicamente a partir da lista de lessons
+  void _generateRollCallRounds() {
+    _rounds = lessons.asMap().entries.map((entry) {
+      int index = entry.key;
+      Lesson lesson = entry.value;
+
+      // Você pode definir a primeira aula como ativa por exemplo
+      RollCallStatus status = index == 0 ? RollCallStatus.active : RollCallStatus.pending;
+
+      return RollCallRound(
+        index + 1, 
+        status: status,
+        lesson: lesson,
+      );
+    }).toList();
+  }
+
 
   // Método para registrar presença (do código do seu colega)
   void _recordPresence(RollCallRound round) {
     print('REGISTRANDO PRESENÇA');
     if (round.status == RollCallStatus.active) {
       setState(() {
+        RollCallStorage.saveRollCall(RollCall(
+          id:1, 
+          lesson: round.lesson,
+          student: student!,
+          presence: true));
+          
         _attendanceStatus[round.roundNumber] = true;
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -110,6 +146,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     }
   }
+
+  Future<void> _loadRollCallAttendance() async {
+    final savedRollCalls = await RollCallStorage.getRollCalls(); // Lista de RollCall
+
+    setState(() {
+      for (var round in _rounds) {
+        final matchingRollCall = savedRollCalls?.cast<RollCall>().firstWhere(
+          (rc) => rc.lesson.id == round.lesson.id && rc.student.id == student?.id,
+          orElse: () => RollCall(
+            id: -1, // id inválido só para placeholder
+            lesson: round.lesson,
+            student: student!,
+            presence: false,
+          ),
+        );
+
+        if (matchingRollCall != null && matchingRollCall.presence == true) {
+          _attendanceStatus[round.roundNumber] = true;
+        }
+      }
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
