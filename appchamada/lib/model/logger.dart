@@ -8,7 +8,7 @@ import 'dart:math'; // Usado para gerar um token aleatório simples.
 // Por enquanto, os imports e o código que depende delas ficarão comentados.
 import 'package:appchamada/model/student.dart';
 import 'package:appchamada/services/student_storage.dart';
-
+import 'package:appchamada/services/user_storage.dart';
 import 'user.dart';
 // import 'student.dart';
 // import 'professor.dart';
@@ -28,18 +28,29 @@ class Logger {
   Future<User?> login(String username, String password) async {
     print('Tentando login com usuário: $username');
 
-    Student? student = await StudentStorage.getStudent();
+    // Primeiro tenta buscar no UserStorage (admin e outros tipos)
+    User? user = await UserStorage.getUserByUsername(username);
+    if (user != null && user.password == password) {
+      user.isOnline = true;
+      user.token = _generateToken();
+      await UserStorage.saveUser(user); // Atualiza o token
+      return user;
+    }
 
-    if(student != null && student.username == username && student.password == password){
+    // Se não encontrou, tenta buscar estudante
+    Student? student = await StudentStorage.getStudent();
+    if (student != null &&
+        student.username == username &&
+        student.password == password) {
       return User(
         id: student.id,
         email: student.email,
         isOnline: true,
         name: student.name,
         password: password,
-        token: student.token,
+        token: _generateToken(),
         userType: student.userType,
-        username: username
+        username: username,
       );
     }
 
