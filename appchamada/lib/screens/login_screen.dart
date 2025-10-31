@@ -1,7 +1,7 @@
 import 'package:appchamada/model/user.dart';
 import 'package:appchamada/model/user_type.dart';
 import 'package:appchamada/screens/dashboard_screen.dart';
-import 'package:appchamada/screens/registration_screen.dart';
+import 'package:appchamada/screens/student_registration_screen.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -18,21 +18,25 @@ class _LoginScreenState extends State<LoginScreen> {
   void _performLogin() {
     final username = _usernameController.text;
     final password = _passwordController.text;
-    
+
     // Simulação da lógica de login (Em Memória - N2)
     // Apenas verifica se os campos não estão vazios para permitir a navegação.
-    
-    if (username.isNotEmpty && password.isNotEmpty) {
-        User user = User.idOnly(id:1);
-        user.userType = UserType.STUDENT;
 
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => DashboardScreen(loggedInUser: user,)),
-        );
+    if (username.isNotEmpty && password.isNotEmpty) {
+      User user = User.idOnly(id: 1);
+      user.userType = UserType.STUDENT;
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => DashboardScreen(loggedInUser: user),
+        ),
+      );
     } else {
       // Feedback visual simples para simulação
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Insira usuário e senha para simular login.')),
+        const SnackBar(
+          content: Text('Insira usuário e senha para simular login.'),
+        ),
       );
     }
   }
@@ -40,7 +44,9 @@ class _LoginScreenState extends State<LoginScreen> {
   void _goToRegistration() {
     // Navegação para a tela de cadastro de estudante
     Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => const RegistrationScreen()),
+      MaterialPageRoute(
+        builder: (context) => const StudentRegistrationScreen(),
+      ),
     );
   }
 
