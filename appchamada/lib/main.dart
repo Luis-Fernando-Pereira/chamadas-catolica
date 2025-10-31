@@ -1,5 +1,8 @@
-import 'package:appchamada/screens/login_screen.dart';
+// lib/main.dart
+
 import 'package:flutter/material.dart';
+// Importe a sua tela de login para que possamos usá-la como tela inicial.
+import 'screens/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -8,16 +11,21 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Católica Chamadas',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        // O tema pode ser ajustado para combinar com o design que vocês definirem.
+        // Vamos usar o tema padrão azul por enquanto.
+        primarySwatch: Colors.blue,
+        // Usando bordas nos campos de texto para combinar com a LoginScreen
+        inputDecorationTheme: const InputDecorationTheme(
+          border: OutlineInputBorder(),
+        ),
       ),
+      // A 'home' é a primeira tela a ser exibida. Deve ser a LoginScreen.
       home: const LoginScreen(),
-      debugShowCheckedModeBanner: false,
     );
   }
 }
