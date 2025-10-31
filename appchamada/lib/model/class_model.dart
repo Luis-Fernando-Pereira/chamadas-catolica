@@ -2,9 +2,7 @@
 
 class ClassModel {
   final int? _id;
-
   String? name;
-
   String? latitude;
   String? longitude;
 
