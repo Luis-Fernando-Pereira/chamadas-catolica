@@ -1,3 +1,5 @@
+import 'package:appchamada/model/user.dart';
+import 'package:appchamada/model/user_type.dart';
 import 'package:appchamada/screens/dashboard_screen.dart';
 import 'package:appchamada/screens/registration_screen.dart';
 import 'package:flutter/material.dart';
@@ -21,9 +23,11 @@ class _LoginScreenState extends State<LoginScreen> {
     // Apenas verifica se os campos não estão vazios para permitir a navegação.
     
     if (username.isNotEmpty && password.isNotEmpty) {
-        // Navegação para a tela principal (Dashboard das 4 Rodadas)
+        User user = User.idOnly(id:1);
+        user.userType = UserType.STUDENT;
+
         Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const DashboardScreen()),
+            MaterialPageRoute(builder: (context) => DashboardScreen(loggedInUser: user,)),
         );
     } else {
       // Feedback visual simples para simulação
