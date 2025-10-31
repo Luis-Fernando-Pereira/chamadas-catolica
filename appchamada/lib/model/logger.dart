@@ -1,5 +1,6 @@
 // lib/model/logger.dart
 
+import 'dart:convert';
 import 'dart:math'; // Usado para gerar um token aleatório simples.
 
 // --- DEPENDÊNCIAS ---
@@ -60,6 +61,6 @@ class Logger {
   String _generateToken() {
     final random = Random.secure();
     final values = List<int>.generate(16, (i) => random.nextInt(256));
-    return base64Url.encode(values); // Exemplo de token
+    return base64UrlEncode(values);
   }
 }

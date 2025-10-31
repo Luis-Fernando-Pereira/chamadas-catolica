@@ -1,6 +1,7 @@
 // lib/screens/dashboard_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 
 // Importando os modelos que criamos
 import '../model/user.dart';
@@ -10,9 +11,9 @@ import '../model/user_type.dart';
 // Classes de placeholder movidas do código original. O ideal é movê-las para /model
 enum RollCallStatus { pending, active, closed }
 
-class RollCallRound {
+class RollCallRound extends Container {
   final int roundNumber;
-  RollCallStatus status;
+  final RollCallStatus status;
 
   RollCallRound(this.roundNumber, {this.status = RollCallStatus.pending});
 }

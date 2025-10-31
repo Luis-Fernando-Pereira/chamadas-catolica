@@ -1,25 +1,6 @@
-// lib/screens/login_screen.dart
-
+import 'package:appchamada/screens/dashboard_screen.dart';
+import 'package:appchamada/screens/registration_screen.dart';
 import 'package:flutter/material.dart';
-
-// O DashboardScreen e RegistrationScreen devem ser criados separadamente.
-// Importe eles aqui quando estiverem prontos.
-// import 'dashboard_screen.dart';
-// import 'registration_screen.dart'; 
-
-// Classes de placeholder para garantir que o código compile para demonstração:
-class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
-  @override
-  Widget build(BuildContext context) => const Scaffold(body: Center(child: Text('Dashboard das 4 Rodadas (Navegável)')));
-}
-
-class RegistrationScreen extends StatelessWidget {
-  const RegistrationScreen({super.key});
-  @override
-  Widget build(BuildContext context) => const Scaffold(body: Center(child: Text('Tela de Cadastro de Estudante (Navegável)')));
-}
-
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
