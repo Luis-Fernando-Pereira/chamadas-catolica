@@ -2,7 +2,6 @@ import 'package:geolocator/geolocator.dart';
 
 class ClassRoom {
   final int? _id;
-
   String? name;
 
   Position? position;

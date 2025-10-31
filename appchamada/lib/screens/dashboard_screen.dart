@@ -13,6 +13,7 @@ import 'package:provider/provider.dart';
 // Importando os modelos que criamos
 import '../model/user.dart';
 import '../model/user_type.dart';
+import 'class_registration_screen.dart';
 // ... outros modelos que você precisar
 
 // Classes de placeholder movidas do código original. O ideal é movê-las para /model
@@ -282,6 +283,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildAdminView() {
-    return const Center(child: Text('Visão do Administrador em construção.'));
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.meeting_room),
+              title: const Text('Gerenciar Salas'),
+              subtitle: const Text('Cadastrar e gerenciar salas de aula'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const ClassRegistrationScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Aqui podemos adicionar mais cards para outras funcionalidades administrativas
+        ],
+      ),
+    );
   }
 }

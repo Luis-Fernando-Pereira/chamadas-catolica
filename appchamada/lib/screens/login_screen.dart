@@ -5,7 +5,7 @@ import 'package:appchamada/model/user.dart';
 import 'package:appchamada/model/user_type.dart';
 import 'package:appchamada/provider/device_position_provider.dart';
 import 'package:appchamada/screens/dashboard_screen.dart';
-import 'package:appchamada/screens/registration_screen.dart';
+import 'package:appchamada/screens/student_registration_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -35,7 +35,9 @@ class _LoginScreenState extends State<LoginScreen> {
     } else {
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Insira usuário e senha para simular login.')),
+        const SnackBar(
+          content: Text('Insira usuário e senha para simular login.'),
+        ),
       );
 
     }
@@ -44,7 +46,9 @@ class _LoginScreenState extends State<LoginScreen> {
   void _goToRegistration() {
     // Navegação para a tela de cadastro de estudante
     Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => const RegistrationScreen()),
+      MaterialPageRoute(
+        builder: (context) => const StudentRegistrationScreen(),
+      ),
     );
   }
 
