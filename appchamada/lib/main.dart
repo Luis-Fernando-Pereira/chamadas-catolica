@@ -5,7 +5,9 @@ import 'package:appchamada/model/lesson.dart';
 import 'package:appchamada/model/lesson_status.dart';
 import 'package:appchamada/model/student.dart';
 import 'package:appchamada/model/subject.dart';
+import 'package:appchamada/model/user.dart';
 import 'package:appchamada/model/user_type.dart';
+import 'package:appchamada/services/user_storage.dart';
 import 'package:appchamada/provider/device_position_provider.dart';
 import 'package:appchamada/screens/login_screen.dart';
 import 'package:appchamada/services/lesson_storage.dart';
@@ -68,7 +70,21 @@ void main() async {
 
   student.userType = UserType.STUDENT;
 
+  // Criar usuário administrador mock
+  final admin = User(
+    id: 2,
+    name: 'Administrador',
+    username: 'admin', // username para login
+    email: 'adm@email.com',
+    password: 'admin123',
+    isOnline: true,
+    token: 'token_admin_123',
+    userType: UserType.ADMIN,
+  );
+
+  // Salvar os usuários
   await StudentStorage.saveStudent(student);
+  await UserStorage.saveUser(admin);
 
   final loaded = await StudentStorage.getStudent();
   print('Aluno carregado: ${loaded?.name}, ${loaded?.userType?.name}');

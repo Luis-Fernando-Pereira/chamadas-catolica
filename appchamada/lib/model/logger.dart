@@ -9,7 +9,7 @@ import 'user_type.dart';
 // Por enquanto, os imports e o código que depende delas ficarão comentados.
 import 'package:appchamada/model/student.dart';
 import 'package:appchamada/services/student_storage.dart';
-
+import 'package:appchamada/services/user_storage.dart';
 import 'user.dart';
 // import 'student.dart';
 // import 'professor.dart';
@@ -55,7 +55,7 @@ class Logger {
         isOnline: true,
         name: student.name,
         password: password,
-        token: student.token,
+        token: _generateToken(),
         userType: student.userType,
         username: username,
       );

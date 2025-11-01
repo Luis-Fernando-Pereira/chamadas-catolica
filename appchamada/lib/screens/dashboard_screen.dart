@@ -21,6 +21,7 @@ import 'subject_registration_screen.dart';
 import '../model/user.dart';
 import '../model/user_type.dart';
 import 'class_registration_screen.dart';
+import 'course_list_screen.dart';
 // ... outros modelos que você precisar
 
 // Classes de placeholder movidas do código original. O ideal é movê-las para /model
@@ -366,6 +367,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => const ClassRegistrationScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.school),
+              title: const Text('Gerenciar Cursos'),
+              subtitle: const Text('Cadastrar e gerenciar cursos'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const CourseListScreen(),
                   ),
                 );
               },
