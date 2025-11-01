@@ -9,13 +9,8 @@ class Subject {
 
   int? get id => _id;
 
-  factory Subject.fromJson(Map<String, dynamic> json) => Subject(
-        id: json['id'],
-        name: json['name'],
-      );
+  factory Subject.fromJson(Map<String, dynamic> json) =>
+      Subject(id: json['id'], name: json['name']);
 
-  Map<String, dynamic> toJson() => {
-        'id': _id,
-        'name': name,
-      };
+  Map<String, dynamic> toJson() => {'id': _id, 'name': name};
 }

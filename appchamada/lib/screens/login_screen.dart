@@ -1,13 +1,8 @@
-import 'package:appchamada/model/assigned_class.dart';
-import 'package:appchamada/model/class_room.dart';
 import 'package:appchamada/model/logger.dart';
 import 'package:appchamada/model/user.dart';
-import 'package:appchamada/model/user_type.dart';
-import 'package:appchamada/provider/device_position_provider.dart';
 import 'package:appchamada/screens/dashboard_screen.dart';
 import 'package:appchamada/screens/student_registration_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,30 +16,29 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   void _performLogin() async {
-    final logger = Logger(); 
+    final logger = Logger();
 
     final username = _usernameController.text;
     final password = _passwordController.text;
-    
-    User? user = await logger.login(username, password); 
 
-    if (user != null) {      
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => DashboardScreen(loggedInUser: user,)),
-        );
+    User? user = await logger.login(username, password);
+
+    if (user != null) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => DashboardScreen(loggedInUser: user),
+        ),
+      );
     } else {
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Insira usuário e senha para simular login.'),
         ),
       );
-
     }
   }
 
   void _goToRegistration() {
-    // Navegação para a tela de cadastro de estudante
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const StudentRegistrationScreen(),

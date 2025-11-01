@@ -38,12 +38,10 @@ class _ClassRegistrationScreenState extends State<ClassRegistrationScreen> {
       final classroom = ClassRoom(
         id: DateTime.now().millisecondsSinceEpoch,
         name: _nameController.text,
-        position: (context.mounted) 
-          ? context.read<DevicePositionProvider>().position
-          : null
+        position: (context.mounted)
+            ? context.read<DevicePositionProvider>().position
+            : null,
       );
-
-      // TODO: Implementar lógica de salvamento real
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

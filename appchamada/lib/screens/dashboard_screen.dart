@@ -13,9 +13,11 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'lesson_registration_screen.dart';
 import 'subject_registration_screen.dart';
+import 'history_screen.dart';
+import '../services/consolidation_service.dart';
+import 'login_screen.dart';
 
 // Importando os modelos que criamos
 import '../model/user.dart';
@@ -180,7 +182,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     // Usando a estrutura de Scaffold e Drawer que eu propus
     return Scaffold(
-      appBar: AppBar(title: const Text('Painel de Chamadas')),
+      appBar: AppBar(
+        title: const Text('Painel de Chamadas'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const HistoryScreen()),
+            ),
+          ),
+        ],
+      ),
       drawer: _buildAppDrawer(), // Menu lateral
       body: _buildDashboardBody(), // Corpo dinâmico baseado no usuário
     );
@@ -202,18 +215,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ListTile(
             leading: const Icon(Icons.person),
             title: const Text('Perfil'),
-            onTap: () => Navigator.pop(context),
-          ),
-          ListTile(
-            leading: const Icon(Icons.description),
-            title: const Text('Relatórios'),
-            onTap: () => Navigator.pop(context),
+            onTap: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Perfil em desenvolvimento')),
+              );
+            },
           ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Sair'),
-            onTap: () => Navigator.pop(context),
+            onTap: () {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+              );
+            },
           ),
         ],
       ),
@@ -236,7 +254,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // --- NOVA VIEW DO ALUNO (MESCLADA) ---
   Widget _buildStudentView() {
-    // Esta é a estrutura do body do código do seu colega
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -254,9 +271,81 @@ class _DashboardScreenState extends State<DashboardScreen> {
             'Status Consolidado:',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          Text(
-            'Presenças Registradas: ${_attendanceStatus.values.where((v) => v).length} de 4',
-            style: const TextStyle(fontSize: 16),
+          const SizedBox(height: 10),
+          FutureBuilder<Map<String, dynamic>>(
+            future: ConsolidationService.getDailyConsolidation(
+              student!.id!,
+              DateTime.now(),
+            ),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (!snapshot.hasData) {
+                return const Text('Sem dados consolidados');
+              }
+
+              final data = snapshot.data!;
+              final percentual = data['percentual'] as double;
+
+              return Card(
+                color: percentual >= 75
+                    ? Colors.green.shade50
+                    : Colors.orange.shade50,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Hoje:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            '${percentual.toStringAsFixed(0)}%',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 24,
+                              color: percentual >= 75
+                                  ? Colors.green
+                                  : Colors.orange,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Divider(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildStatChip(
+                            'Presenças',
+                            '${data['presencas']}/4',
+                            Colors.green,
+                          ),
+                          _buildStatChip(
+                            'Faltas',
+                            '${data['faltas']}/4',
+                            Colors.red,
+                          ),
+                          _buildStatChip(
+                            'Atrasos',
+                            '${data['atrasos']}/4',
+                            Colors.orange,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -315,9 +404,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     return;
                   }
 
-                  //TODO: trocar esta longitude e latitude pela da sala de aula registrada no banco de dados
-                  const targetLatitude = -26.2494107;
-                  const targetLongitude = -48.8160327;
+                  if (round.lesson.classRoom?.position == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Sala sem coordenadas cadastradas'),
+                      ),
+                    );
+                    return;
+                  }
+
+                  final targetLatitude =
+                      round.lesson.classRoom!.position!.latitude;
+                  final targetLongitude =
+                      round.lesson.classRoom!.position!.longitude;
 
                   final distanceInMeters = Geolocator.distanceBetween(
                     currentPosition.latitude,
@@ -334,10 +433,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     if (round.status == RollCallStatus.active) {
                       _recordPresence(round);
                     } else {
-                      print("Rodada não está ativa.");
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            '⚠️ Esta rodada não está ativa no momento',
+                          ),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
                     }
                   } else {
-                    print("Usuário não está próximo o suficiente.");
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Você está muito longe da sala!\n'
+                          'Distância: ${(distanceInMeters / 1000).toStringAsFixed(2)} km\n'
+                          'Você precisa estar a menos de 5 metros.',
+                        ),
+                        backgroundColor: Colors.red,
+                        duration: const Duration(seconds: 4),
+                      ),
+                    );
                   }
                 },
                 child: const Text('Registrar'),
@@ -346,9 +462,70 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // As views de Professor e Admin podem ser as que eu sugeri anteriormente
   Widget _buildProfessorView() {
-    return const Center(child: Text('Visão do Professor em construção.'));
+    return FutureBuilder<List<RollCall>?>(
+      future: RollCallStorage.getRollCalls(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final rollCalls = snapshot.data ?? [];
+
+        if (rollCalls.isEmpty) {
+          return const Center(child: Text('Nenhum registro de presença ainda'));
+        }
+
+        // Agrupar por aluno
+        Map<String, List<RollCall>> byStudent = {};
+        for (var rc in rollCalls) {
+          final name = rc.student.name ?? 'Sem nome';
+          byStudent.putIfAbsent(name, () => []).add(rc);
+        }
+
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: byStudent.entries.map((entry) {
+            final studentName = entry.key;
+            final records = entry.value;
+            final presencas = records.where((rc) => rc.presence).length;
+            final total = records.length;
+            final percentual = total > 0 ? (presencas / total * 100) : 0;
+
+            return Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: ExpansionTile(
+                leading: CircleAvatar(
+                  backgroundColor: percentual >= 75
+                      ? Colors.green
+                      : Colors.orange,
+                  child: Text(
+                    '${percentual.toStringAsFixed(0)}%',
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ),
+                title: Text(studentName),
+                subtitle: Text('$presencas/$total presenças registradas'),
+                children: records.asMap().entries.map((e) {
+                  final idx = e.key;
+                  final rc = e.value;
+                  return ListTile(
+                    dense: true,
+                    leading: Icon(
+                      rc.presence ? Icons.check : Icons.close,
+                      color: rc.presence ? Colors.green : Colors.red,
+                      size: 20,
+                    ),
+                    title: Text('Rodada ${idx + 1}'),
+                    subtitle: Text(rc.lesson.subject?.name ?? ''),
+                  );
+                }).toList(),
+              ),
+            );
+          }).toList(),
+        );
+      },
+    );
   }
 
   Widget _buildAdminView() {
@@ -425,6 +602,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildStatChip(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        Text(label, style: const TextStyle(fontSize: 12)),
+      ],
     );
   }
 }
