@@ -1,22 +1,20 @@
-import 'package:appchamada/model/class_room.dart';
-import 'package:appchamada/model/subject.dart';
+// lib/model/lesson.dart
 
-import 'assigned_class.dart';
-import 'lesson_status.dart';
-//import 'class_room.dart';
-//import 'subject.dart';
+// Imports necessários para as classes que compõem uma Lesson
+import 'package:appchamada/model/assigned_class.dart';
+import 'package:appchamada/model/class_room.dart';
+import 'package:appchamada/model/lesson_status.dart';
+import 'package:appchamada/model/subject.dart';
 
 class Lesson {
   final int? _id;
   DateTime? start;
-  Duration? duration; // A classe Duration é ideal para representar um período de tempo, como minutos.
-
+  Duration? duration;
   Subject? subject;
-  AssignedClass? assignedClass; // Usamos 'assignedClass' para evitar conflito com a palavra-chave 'class'.
+  AssignedClass? assignedClass;
   LessonStatus? lessonStatus;
   ClassRoom? classRoom;
 
-  // Construtor da classe
   Lesson({
     required int id,
     this.start,
@@ -29,31 +27,43 @@ class Lesson {
 
   int? get id => _id;
 
-  factory Lesson.fromJson(Map<String, dynamic> json) => Lesson(
-        id: json['id'],
-        start: json['start'] != null ? DateTime.parse(json['start']) : null,
-        duration: json['duration'] != null
-            ? Duration(minutes: json['duration'])
-            : null,
-        subject: json['subject'] != null ? Subject.fromJson(json['subject']) : null,
-        assignedClass: json['assignedClass'] != null
-            ? AssignedClass.fromJson(json['assignedClass'])
-            : null,
-        lessonStatus: json['lessonStatus'] != null
-            ? LessonStatus.values.firstWhere(
-                (e) => e.toString() == 'LessonStatus.${json['lessonStatus']}',
-              )
-            : null,
-        classRoom: json['classRoom'] != null ? ClassRoom.fromJson(json['classRoom']) : null,
-      );
+  // === CONVERSORES JSON ===
 
-  Map<String, dynamic> toJson() => {
-        'id': _id,
-        'start': start?.toIso8601String(),
-        'duration': duration?.inMinutes,
-        'subject': subject?.toJson(),
-        'assignedClass': assignedClass?.toJson(),
-        'lessonStatus': lessonStatus?.toString().split('.').last,
-        'classRoom': classRoom?.toJson(),
-      };
+  // Construtor factory para criar uma Lesson a partir de um mapa JSON
+  factory Lesson.fromJson(Map<String, dynamic> json) {
+    return Lesson(
+      id: json['id'],
+      start: json['start'] != null ? DateTime.parse(json['start']) : null,
+      duration: json['duration'] != null
+          ? Duration(microseconds: json['duration'])
+          : null,
+      subject: json['subject'] != null
+          ? Subject.fromJson(json['subject'])
+          : null,
+      assignedClass: json['assignedClass'] != null
+          ? AssignedClass.fromJson(json['assignedClass'])
+          : null,
+      lessonStatus: json['lessonStatus'] != null
+          ? LessonStatus.values.byName(json['lessonStatus'])
+          : null,
+      classRoom: json['classRoom'] != null
+          ? ClassRoom.fromJson(json['classRoom'])
+          : null,
+    );
+  }
+
+  // Método para converter o objeto Lesson em um mapa JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': _id,
+      'start': start?.toIso8601String(),
+      'duration': duration?.inMicroseconds,
+      'subject': subject?.toJson(), // Chama o toJson() do Subject
+      'assignedClass': assignedClass
+          ?.toJson(), // Chama o toJson() do AssignedClass
+      'lessonStatus':
+          lessonStatus?.name, // Salva o nome do enum (ex: 'AGENDADO')
+      'classRoom': classRoom?.toJson(), // Chama o toJson() do ClassRoom
+    };
+  }
 }

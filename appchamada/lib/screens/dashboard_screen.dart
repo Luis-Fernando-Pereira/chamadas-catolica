@@ -14,6 +14,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'lesson_registration_screen.dart';
+import 'subject_registration_screen.dart';
 
 // Importando os modelos que criamos
 import '../model/user.dart';
@@ -388,6 +390,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 16),
           // Aqui podemos adicionar mais cards para outras funcionalidades administrativas
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.class_),
+              title: const Text('Gerenciar Aulas'),
+              subtitle: const Text('Cadastrar e agendar novas aulas'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const LessonRegistrationScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.book_outlined),
+              title: const Text('Gerenciar Matérias'),
+              subtitle: const Text('Cadastrar novas matérias no sistema'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const SubjectRegistrationScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );

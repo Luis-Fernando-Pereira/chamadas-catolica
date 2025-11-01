@@ -53,7 +53,7 @@ void main() async {
     classRoom: classRoom,
   );
 
-  LessonStorage.saveLesson(lesson);
+  await LessonStorage.saveLessons([lesson]);
 
   final student = Student(
     id: 1,
