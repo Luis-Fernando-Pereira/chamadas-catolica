@@ -17,16 +17,10 @@ import 'package:provider/provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final subject = Subject(
-    id: 101,
-    name: 'Matemática Discreta',
-  );
+  final subject = Subject(id: 101, name: 'Matemática Discreta');
 
   // Criar a turma
-  final assignedClass = AssignedClass(
-    id: 5,
-    name: 'Turma A - Noturno',
-  );
+  final assignedClass = AssignedClass(id: 5, name: 'Turma A - Noturno');
 
   // Criar a sala de aula
   final classRoom = ClassRoom(
@@ -57,9 +51,7 @@ void main() async {
     classRoom: classRoom,
   );
 
-  LessonStorage.saveLesson(lesson);
-
-
+  await LessonStorage.saveLessons([lesson]);
 
   final student = Student(
     id: 1,

@@ -2,7 +2,8 @@
 
 import 'dart:convert';
 import 'dart:math'; // Usado para gerar um token aleatório simples.
-
+import 'administrator.dart';
+import 'user_type.dart';
 // --- DEPENDÊNCIAS ---
 // Para este código funcionar sem erros, as seguintes classes precisam existir.
 // Por enquanto, os imports e o código que depende delas ficarão comentados.
@@ -28,9 +29,26 @@ class Logger {
   Future<User?> login(String username, String password) async {
     print('Tentando login com usuário: $username');
 
+    if (username == 'admin' && password == 'admin') {
+      print('Login de Administrador bem-sucedido!');
+
+      // Agora usamos o construtor nomeado 'Administrator.user', que acabamos de corrigir.
+      // Ele aceita todos os parâmetros de uma vez.
+      return Administrator.user(
+        id: 999,
+        name: 'Administrador',
+        username: 'admin',
+        email: 'admin@catolica.edu.br',
+        userType: UserType.ADMIN, // Passando o userType diretamente
+        isOnline: true,
+      );
+    }
+
     Student? student = await StudentStorage.getStudent();
 
-    if(student != null && student.username == username && student.password == password){
+    if (student != null &&
+        student.username == username &&
+        student.password == password) {
       return User(
         id: student.id,
         email: student.email,
@@ -39,7 +57,7 @@ class Logger {
         password: password,
         token: student.token,
         userType: student.userType,
-        username: username
+        username: username,
       );
     }
 
