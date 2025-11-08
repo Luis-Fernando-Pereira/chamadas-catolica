@@ -1,4 +1,4 @@
-package com.example.appchamada
+package com.catolica.appchamada
 
 import io.flutter.embedding.android.FlutterActivity
 

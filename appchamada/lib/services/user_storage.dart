@@ -10,7 +10,7 @@ class UserStorage {
     final prefs = await SharedPreferences.getInstance();
 
     // Carregar usuários existentes
-    final List<User> users = await getUsers() ?? [];
+    final List<User> users = await getUsers();
 
     // Verificar se já existe um usuário com mesmo username
     final existingIndex = users.indexWhere((u) => u.username == user.username);

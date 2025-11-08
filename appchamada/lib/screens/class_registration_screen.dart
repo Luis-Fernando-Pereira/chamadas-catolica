@@ -43,6 +43,9 @@ class _ClassRegistrationScreenState extends State<ClassRegistrationScreen> {
             : null,
       );
 
+      // TODO: Salvar classroom em storage/banco de dados
+      print('Sala criada: ${classroom.name} (ID: ${classroom.id})');
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'package:appchamada/model/roll_call.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'remote_storage_service.dart';
 
 class RollCallStorage {
   static const String _key = 'roll_calls_data';
@@ -15,6 +16,14 @@ class RollCallStorage {
 
     final jsonString = jsonEncode(rollCalls.map((e) => e.toJson()).toList());
     await prefs.setString(_key, jsonString);
+
+    // Sincroniza com Firebase (não bloqueia se falhar)
+    try {
+      await RemoteStorageService.syncRollCall(rollCall);
+      print('✅ Registro sincronizado com Firebase');
+    } catch (e) {
+      print('⚠️ Falha ao sincronizar com Firebase (salvo localmente): $e');
+    }
   }
 
   static Future<List<RollCall>?> getRollCalls() async {

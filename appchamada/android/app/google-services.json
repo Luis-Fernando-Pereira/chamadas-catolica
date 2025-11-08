@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "37449062977",
+    "project_id": "chamadas-catolica",
+    "storage_bucket": "chamadas-catolica.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:37449062977:android:7f8cac4e37c9268a9a44c0",
+        "android_client_info": {
+          "package_name": "com.catolica.appchamada"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9tf5HZoyAsU_9lkcIY3YLwD3BK1ytZ24"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

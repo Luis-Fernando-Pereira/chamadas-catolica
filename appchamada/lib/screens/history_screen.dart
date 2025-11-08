@@ -31,6 +31,13 @@ class HistoryScreen extends StatelessWidget {
               final status = rc.presence ? 'PRESENTE' : 'FALTA';
               final color = rc.presence ? Colors.green : Colors.red;
 
+              final recordedTime = rc.recordedAt != null
+                  ? rc.recordedAt!.toString().substring(11, 19)
+                  : 'N/A';
+              final lessonDate = rc.lesson.start != null
+                  ? rc.lesson.start!.toString().substring(0, 10)
+                  : 'N/A';
+
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListTile(
@@ -41,12 +48,13 @@ class HistoryScreen extends StatelessWidget {
                   ),
                   title: Text(rc.lesson.subject?.name ?? 'Matéria'),
                   subtitle: Text(
+                    'Data: $lessonDate\n'
                     'Rodada ${index + 1}\n'
-                    '${rc.lesson.start?.toString().substring(0, 16) ?? ""}',
+                    'Registrado às: $recordedTime',
                   ),
                   trailing: Chip(
                     label: Text(status),
-                    backgroundColor: color.withOpacity(0.2),
+                    backgroundColor: color.withValues(alpha: 0.2),
                   ),
                 ),
               );

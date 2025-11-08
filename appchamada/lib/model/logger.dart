@@ -3,7 +3,7 @@ import 'dart:math';
 import 'administrator.dart';
 import 'user_type.dart';
 import 'package:appchamada/model/student.dart';
-import 'package:appchamada/services/student_storage.dart';
+import 'package:appchamada/services/auth_service.dart';
 import 'user.dart';
 
 class Logger {
@@ -13,35 +13,44 @@ class Logger {
   }
 
   Future<User?> login(String username, String password) async {
-    if (username == 'admin' && password == 'admin') {
-      return Administrator.user(
-        id: 999,
-        name: 'Administrador',
-        username: 'admin',
-        email: 'admin@catolica.edu.br',
-        userType: UserType.ADMIN,
-        isOnline: true,
-      );
-    }
+    try {
+      print('🔐 Logger: Tentando login com Firebase...');
 
-    Student? student = await StudentStorage.getStudent();
-
-    if (student != null &&
-        student.username == username &&
-        student.password == password) {
-      return User(
-        id: student.id,
-        email: student.email,
-        isOnline: true,
-        name: student.name,
-        password: password,
-        token: _generateToken(),
-        userType: student.userType,
+      // Tentar login via Firebase
+      final result = await AuthService.login(
         username: username,
+        password: password,
       );
-    }
 
-    return null;
+      if (result['success']) {
+        print('✅ Logger: Login bem-sucedido via Firebase');
+
+        final User user = result['user'];
+        user.token = _generateToken();
+
+        return user;
+      } else {
+        print('❌ Logger: ${result['message']}');
+        return null;
+      }
+    } catch (e) {
+      print('❌ Logger: Erro ao fazer login: $e');
+
+      // Fallback: Admin hardcoded (apenas para emergência)
+      if (username == 'admin' && password == 'admin') {
+        print('⚠️ Logger: Usando admin hardcoded (fallback)');
+        return Administrator.user(
+          id: 999,
+          name: 'Administrador',
+          username: 'admin',
+          email: 'admin@catolica.edu.br',
+          userType: UserType.ADMIN,
+          isOnline: true,
+        );
+      }
+
+      return null;
+    }
   }
 
   String _generateToken() {

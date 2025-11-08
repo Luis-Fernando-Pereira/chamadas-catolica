@@ -17,6 +17,8 @@ import 'lesson_registration_screen.dart';
 import 'subject_registration_screen.dart';
 import 'history_screen.dart';
 import '../services/consolidation_service.dart';
+import '../services/csv_export_service.dart';
+import '../widgets/sync_indicator.dart';
 import 'login_screen.dart';
 
 // Importando os modelos que criamos
@@ -36,6 +38,7 @@ class RollCallRound extends Container {
 
   RollCallRound(
     this.roundNumber, {
+    super.key,
     this.status = RollCallStatus.pending,
     required this.lesson,
   });
@@ -57,7 +60,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<Lesson> lessons = [];
 
   List<RollCallRound> _rounds = [];
-  Map<int, bool> _attendanceStatus = {};
+  final Map<int, bool> _attendanceStatus = {};
 
   Future<void> _handleLocationSetup() async {
     var status = await Permission.location.status;
@@ -131,10 +134,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       setState(() {
         RollCallStorage.saveRollCall(
           RollCall(
-            id: 1,
+            id: DateTime.now()
+                .millisecondsSinceEpoch, // ID único baseado em timestamp
             lesson: round.lesson,
             student: student!,
             presence: true,
+            recordedAt: DateTime.now(), // Registra o momento exato da presença
           ),
         );
 
@@ -146,6 +151,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       );
     } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('A Rodada ${round.roundNumber} não está ativa.'),
@@ -185,6 +191,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         title: const Text('Painel de Chamadas'),
         actions: [
+          const Padding(
+            padding: EdgeInsets.only(right: 12),
+            child: Center(child: SyncIndicator()),
+          ),
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () => Navigator.push(
@@ -347,6 +357,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
               );
             },
           ),
+          const SizedBox(height: 20),
+          // Botão de Exportação CSV
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _exportCsvReport,
+              icon: const Icon(Icons.download),
+              label: const Text('Exportar Relatório CSV'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -396,6 +421,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onPressed: () async {
                   await _handleLocationSetup();
 
+                  if (!mounted) return;
+
                   final currentPosition = context
                       .read<DevicePositionProvider>()
                       .position;
@@ -405,6 +432,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   }
 
                   if (round.lesson.classRoom?.position == null) {
+                    if (!mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Sala sem coordenadas cadastradas'),
@@ -433,6 +461,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     if (round.status == RollCallStatus.active) {
                       _recordPresence(round);
                     } else {
+                      if (!mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
@@ -619,5 +648,83 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Text(label, style: const TextStyle(fontSize: 12)),
       ],
     );
+  }
+
+  // Método para exportar relatório CSV
+  Future<void> _exportCsvReport() async {
+    // Mostra loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      // Exporta o CSV
+      final result = await CsvExportService.exportCsv();
+
+      // Fecha o loading
+      if (mounted) Navigator.of(context).pop();
+
+      // Mostra resultado
+      if (result['success']) {
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('✅ Sucesso!'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(result['message']),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Local:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    result['fileName'],
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'O arquivo foi salvo na pasta Downloads e pode ser acessado pelo gerenciador de arquivos do seu celular.',
+                    style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message']),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Fecha o loading em caso de erro
+      if (mounted) Navigator.of(context).pop();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao exportar: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
