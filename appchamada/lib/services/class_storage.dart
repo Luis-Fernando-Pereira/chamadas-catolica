@@ -174,8 +174,8 @@ class ClassStorage {
       print('📦 Criando turmas iniciais...');
 
       final initialClasses = [
-        AssignedClass(id: 101, name: 'Turma 2025/1'),
-        AssignedClass(id: 102, name: 'Turma 2025/2'),
+        AssignedClass(id: 101, name: 'A'),
+        AssignedClass(id: 102, name: 'B'),
       ];
 
       for (final assignedClass in initialClasses) {

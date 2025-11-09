@@ -1,18 +1,18 @@
-// lib/screens/course_list_screen.dart
-import 'package:appchamada/model/course.dart';
-import 'package:appchamada/services/course_storage.dart';
+// lib/screens/class_room_list_screen.dart
+import 'package:appchamada/model/class_room.dart';
+import 'package:appchamada/services/class_room_storage.dart';
 import 'package:flutter/material.dart';
-import 'course_form_screen.dart';
+import 'class_room_form_screen.dart';
 
-class CourseListScreen extends StatefulWidget {
-  const CourseListScreen({super.key});
+class ClassRoomListScreen extends StatefulWidget {
+  const ClassRoomListScreen({super.key});
 
   @override
-  State<CourseListScreen> createState() => _CourseListScreenState();
+  State<ClassRoomListScreen> createState() => _ClassRoomListScreenState();
 }
 
-class _CourseListScreenState extends State<CourseListScreen> {
-  late Future<List<Course>> _coursesFuture;
+class _ClassRoomListScreenState extends State<ClassRoomListScreen> {
+  late Future<List<ClassRoom>> _classRoomsFuture;
 
   @override
   void initState() {
@@ -21,7 +21,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
   }
 
   void _load() {
-    _coursesFuture = CourseStorage.getCourses();
+    _classRoomsFuture = ClassRoomStorage.getClassRooms();
   }
 
   Future<void> _refresh() async {
@@ -33,17 +33,17 @@ class _CourseListScreenState extends State<CourseListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Cursos')),
-      body: FutureBuilder<List<Course>>(
-        future: _coursesFuture,
+      appBar: AppBar(title: const Text('Salas de Aula')),
+      body: FutureBuilder<List<ClassRoom>>(
+        future: _classRoomsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final courses = snapshot.data ?? [];
+          final classRooms = snapshot.data ?? [];
 
-          if (courses.isEmpty) {
+          if (classRooms.isEmpty) {
             return RefreshIndicator(
               onRefresh: _refresh,
               child: ListView(
@@ -52,7 +52,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
                   Center(
                     child: Padding(
                       padding: EdgeInsets.all(32.0),
-                      child: Text('Nenhum curso cadastrado'),
+                      child: Text('Nenhuma sala cadastrada'),
                     ),
                   ),
                 ],
@@ -63,21 +63,28 @@ class _CourseListScreenState extends State<CourseListScreen> {
           return RefreshIndicator(
             onRefresh: _refresh,
             child: ListView.builder(
-              itemCount: courses.length,
+              itemCount: classRooms.length,
               itemBuilder: (context, index) {
-                final c = courses[index];
+                final classRoom = classRooms[index];
+                final hasLocation = classRoom.position != null;
+
                 return Card(
                   margin: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 8,
                   ),
                   child: ListTile(
-                    leading: const CircleAvatar(
-                      backgroundColor: Colors.blue,
-                      child: Icon(Icons.school, color: Colors.white),
+                    leading: CircleAvatar(
+                      backgroundColor: hasLocation
+                          ? Colors.green
+                          : Colors.orange,
+                      child: Icon(
+                        hasLocation ? Icons.location_on : Icons.location_off,
+                        color: Colors.white,
+                      ),
                     ),
-                    title: Text(c.name ?? '—'),
-                    subtitle: Text('ID: ${c.id}'),
+                    title: Text(classRoom.name ?? '—'),
+                    subtitle: Text('ID: ${classRoom.id}'),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -86,7 +93,8 @@ class _CourseListScreenState extends State<CourseListScreen> {
                           onPressed: () async {
                             await Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) => CourseFormScreen(course: c),
+                                builder: (_) =>
+                                    ClassRoomFormScreen(classRoom: classRoom),
                               ),
                             );
                             await _refresh();
@@ -94,7 +102,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _confirmDelete(c),
+                          onPressed: () => _confirmDelete(classRoom),
                         ),
                       ],
                     ),
@@ -108,21 +116,21 @@ class _CourseListScreenState extends State<CourseListScreen> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () async {
-          await Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (_) => const CourseFormScreen()));
+          await Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const ClassRoomFormScreen()),
+          );
           await _refresh();
         },
       ),
     );
   }
 
-  Future<void> _confirmDelete(Course course) async {
+  Future<void> _confirmDelete(ClassRoom classRoom) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Confirmar Exclusão'),
-        content: Text('Deseja excluir "${course.name}"?'),
+        content: Text('Deseja excluir "${classRoom.name}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -138,11 +146,11 @@ class _CourseListScreenState extends State<CourseListScreen> {
     );
 
     if (confirm == true) {
-      await CourseStorage.deleteCourse(course.id!);
+      await ClassRoomStorage.deleteClassRoom(classRoom.id!);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Curso excluído!'),
+            content: Text('Sala excluída!'),
             backgroundColor: Colors.green,
           ),
         );

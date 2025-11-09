@@ -1,18 +1,18 @@
-// lib/screens/course_list_screen.dart
-import 'package:appchamada/model/course.dart';
-import 'package:appchamada/services/course_storage.dart';
+// lib/screens/subject_list_screen.dart
+import 'package:appchamada/model/subject.dart';
+import 'package:appchamada/services/subject_storage.dart';
 import 'package:flutter/material.dart';
-import 'course_form_screen.dart';
+import 'subject_form_screen.dart';
 
-class CourseListScreen extends StatefulWidget {
-  const CourseListScreen({super.key});
+class SubjectListScreen extends StatefulWidget {
+  const SubjectListScreen({super.key});
 
   @override
-  State<CourseListScreen> createState() => _CourseListScreenState();
+  State<SubjectListScreen> createState() => _SubjectListScreenState();
 }
 
-class _CourseListScreenState extends State<CourseListScreen> {
-  late Future<List<Course>> _coursesFuture;
+class _SubjectListScreenState extends State<SubjectListScreen> {
+  late Future<List<Subject>> _subjectsFuture;
 
   @override
   void initState() {
@@ -21,7 +21,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
   }
 
   void _load() {
-    _coursesFuture = CourseStorage.getCourses();
+    _subjectsFuture = SubjectStorage.getSubjects();
   }
 
   Future<void> _refresh() async {
@@ -33,17 +33,17 @@ class _CourseListScreenState extends State<CourseListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Cursos')),
-      body: FutureBuilder<List<Course>>(
-        future: _coursesFuture,
+      appBar: AppBar(title: const Text('Matérias/Disciplinas')),
+      body: FutureBuilder<List<Subject>>(
+        future: _subjectsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final courses = snapshot.data ?? [];
+          final subjects = snapshot.data ?? [];
 
-          if (courses.isEmpty) {
+          if (subjects.isEmpty) {
             return RefreshIndicator(
               onRefresh: _refresh,
               child: ListView(
@@ -52,7 +52,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
                   Center(
                     child: Padding(
                       padding: EdgeInsets.all(32.0),
-                      child: Text('Nenhum curso cadastrado'),
+                      child: Text('Nenhuma matéria cadastrada'),
                     ),
                   ),
                 ],
@@ -63,9 +63,9 @@ class _CourseListScreenState extends State<CourseListScreen> {
           return RefreshIndicator(
             onRefresh: _refresh,
             child: ListView.builder(
-              itemCount: courses.length,
+              itemCount: subjects.length,
               itemBuilder: (context, index) {
-                final c = courses[index];
+                final subject = subjects[index];
                 return Card(
                   margin: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -74,10 +74,10 @@ class _CourseListScreenState extends State<CourseListScreen> {
                   child: ListTile(
                     leading: const CircleAvatar(
                       backgroundColor: Colors.blue,
-                      child: Icon(Icons.school, color: Colors.white),
+                      child: Icon(Icons.book, color: Colors.white),
                     ),
-                    title: Text(c.name ?? '—'),
-                    subtitle: Text('ID: ${c.id}'),
+                    title: Text(subject.name ?? '—'),
+                    subtitle: Text('ID: ${subject.id}'),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -86,7 +86,8 @@ class _CourseListScreenState extends State<CourseListScreen> {
                           onPressed: () async {
                             await Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) => CourseFormScreen(course: c),
+                                builder: (_) =>
+                                    SubjectFormScreen(subject: subject),
                               ),
                             );
                             await _refresh();
@@ -94,7 +95,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _confirmDelete(c),
+                          onPressed: () => _confirmDelete(subject),
                         ),
                       ],
                     ),
@@ -110,19 +111,19 @@ class _CourseListScreenState extends State<CourseListScreen> {
         onPressed: () async {
           await Navigator.of(
             context,
-          ).push(MaterialPageRoute(builder: (_) => const CourseFormScreen()));
+          ).push(MaterialPageRoute(builder: (_) => const SubjectFormScreen()));
           await _refresh();
         },
       ),
     );
   }
 
-  Future<void> _confirmDelete(Course course) async {
+  Future<void> _confirmDelete(Subject subject) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Confirmar Exclusão'),
-        content: Text('Deseja excluir "${course.name}"?'),
+        content: Text('Deseja excluir "${subject.name}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -138,11 +139,11 @@ class _CourseListScreenState extends State<CourseListScreen> {
     );
 
     if (confirm == true) {
-      await CourseStorage.deleteCourse(course.id!);
+      await SubjectStorage.deleteSubject(subject.id!);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Curso excluído!'),
+            content: Text('Matéria excluída!'),
             backgroundColor: Colors.green,
           ),
         );

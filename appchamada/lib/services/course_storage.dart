@@ -164,7 +164,7 @@ class CourseStorage {
       print('📦 Criando cursos iniciais...');
 
       final initialCourses = [
-        Course(id: 1, name: 'Engenharia de Software'),
+        Course(id: 1, name: 'ENGENHARIA DE SOFTWARE'),
       ];
 
       for (final course in initialCourses) {

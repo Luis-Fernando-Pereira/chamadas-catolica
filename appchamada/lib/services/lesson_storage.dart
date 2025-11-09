@@ -2,35 +2,98 @@
 import 'dart:convert';
 import 'package:appchamada/model/lesson.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LessonStorage {
   static const String _key = 'lessons_data';
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static const String _collection = 'lessons';
 
-  // Salva uma LISTA COMPLETA de aulas.
-  static Future<void> saveLessons(List<Lesson> lessons) async {
+  static Future<void> saveLesson(Lesson lesson) async {
+    try {
+      final data = lesson.toJson();
+      await _firestore.collection(_collection).doc(lesson.id.toString()).set({
+        ...data,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('❌ Erro ao salvar aula: $e');
+    }
+
     final prefs = await SharedPreferences.getInstance();
-    // Converte a lista de objetos Lesson para uma lista de Mapas (JSON)
-    final List<Map<String, dynamic>> lessonsJson = lessons
-        .map((lesson) => lesson.toJson())
-        .toList();
-    // Codifica a lista de mapas em uma única string JSON
-    final jsonString = jsonEncode(lessonsJson);
-    await prefs.setString(_key, jsonString);
+    final lessons = await getLessons() ?? [];
+    final index = lessons.indexWhere((l) => l.id == lesson.id);
+    if (index >= 0) {
+      lessons[index] = lesson;
+    } else {
+      lessons.add(lesson);
+    }
+    await prefs.setString(
+      _key,
+      jsonEncode(lessons.map((e) => e.toJson()).toList()),
+    );
   }
 
-  // Busca a lista de aulas salvas.
   static Future<List<Lesson>?> getLessons() async {
+    try {
+      final snapshot = await _firestore.collection(_collection).get();
+      if (snapshot.docs.isNotEmpty) {
+        final lessons = snapshot.docs
+            .map((doc) => Lesson.fromJson(doc.data()))
+            .toList();
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(
+          _key,
+          jsonEncode(lessons.map((e) => e.toJson()).toList()),
+        );
+        return lessons;
+      }
+    } catch (e) {
+      print('⚠️ Erro Firebase, usando cache: $e');
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final jsonString = prefs.getString(_key);
     if (jsonString == null) return null;
-
-    // Decodifica a string JSON para uma lista de mapas dinâmicos
     final List<dynamic> jsonData = json.decode(jsonString);
-    // Converte cada mapa de volta para um objeto Lesson
     return jsonData.map((e) => Lesson.fromJson(e)).toList();
   }
 
-  // Limpa os dados
+  static Future<void> saveLessons(List<Lesson> lessons) async {
+    for (final lesson in lessons) {
+      await saveLesson(lesson);
+    }
+  }
+
+  static Future<void> updateLesson(Lesson lesson) async {
+    try {
+      final data = lesson.toJson();
+      await _firestore.collection(_collection).doc(lesson.id.toString()).update(
+        {...data, 'updatedAt': FieldValue.serverTimestamp()},
+      );
+    } catch (e) {
+      print('❌ Erro ao atualizar: $e');
+    }
+    await saveLesson(lesson);
+  }
+
+  static Future<void> deleteLesson(int id) async {
+    try {
+      await _firestore.collection(_collection).doc(id.toString()).delete();
+    } catch (e) {
+      print('❌ Erro ao deletar: $e');
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final lessons = await getLessons() ?? [];
+    lessons.removeWhere((l) => l.id == id);
+    await prefs.setString(
+      _key,
+      jsonEncode(lessons.map((e) => e.toJson()).toList()),
+    );
+  }
+
   static Future<void> clearLessons() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_key);

@@ -1,18 +1,18 @@
-// lib/screens/course_list_screen.dart
-import 'package:appchamada/model/course.dart';
-import 'package:appchamada/services/course_storage.dart';
+// lib/screens/class_list_screen.dart
+import 'package:appchamada/model/assigned_class.dart';
+import 'package:appchamada/services/class_storage.dart';
 import 'package:flutter/material.dart';
-import 'course_form_screen.dart';
+import 'class_form_screen.dart';
 
-class CourseListScreen extends StatefulWidget {
-  const CourseListScreen({super.key});
+class ClassListScreen extends StatefulWidget {
+  const ClassListScreen({super.key});
 
   @override
-  State<CourseListScreen> createState() => _CourseListScreenState();
+  State<ClassListScreen> createState() => _ClassListScreenState();
 }
 
-class _CourseListScreenState extends State<CourseListScreen> {
-  late Future<List<Course>> _coursesFuture;
+class _ClassListScreenState extends State<ClassListScreen> {
+  late Future<List<AssignedClass>> _classesFuture;
 
   @override
   void initState() {
@@ -21,7 +21,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
   }
 
   void _load() {
-    _coursesFuture = CourseStorage.getCourses();
+    _classesFuture = ClassStorage.getClasses();
   }
 
   Future<void> _refresh() async {
@@ -33,17 +33,17 @@ class _CourseListScreenState extends State<CourseListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Cursos')),
-      body: FutureBuilder<List<Course>>(
-        future: _coursesFuture,
+      appBar: AppBar(title: const Text('Turmas')),
+      body: FutureBuilder<List<AssignedClass>>(
+        future: _classesFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final courses = snapshot.data ?? [];
+          final classes = snapshot.data ?? [];
 
-          if (courses.isEmpty) {
+          if (classes.isEmpty) {
             return RefreshIndicator(
               onRefresh: _refresh,
               child: ListView(
@@ -52,7 +52,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
                   Center(
                     child: Padding(
                       padding: EdgeInsets.all(32.0),
-                      child: Text('Nenhum curso cadastrado'),
+                      child: Text('Nenhuma turma cadastrada'),
                     ),
                   ),
                 ],
@@ -63,9 +63,9 @@ class _CourseListScreenState extends State<CourseListScreen> {
           return RefreshIndicator(
             onRefresh: _refresh,
             child: ListView.builder(
-              itemCount: courses.length,
+              itemCount: classes.length,
               itemBuilder: (context, index) {
-                final c = courses[index];
+                final assignedClass = classes[index];
                 return Card(
                   margin: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -73,11 +73,11 @@ class _CourseListScreenState extends State<CourseListScreen> {
                   ),
                   child: ListTile(
                     leading: const CircleAvatar(
-                      backgroundColor: Colors.blue,
-                      child: Icon(Icons.school, color: Colors.white),
+                      backgroundColor: Colors.purple,
+                      child: Icon(Icons.class_, color: Colors.white),
                     ),
-                    title: Text(c.name ?? '—'),
-                    subtitle: Text('ID: ${c.id}'),
+                    title: Text(assignedClass.name ?? '—'),
+                    subtitle: Text('ID: ${assignedClass.id}'),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -86,7 +86,9 @@ class _CourseListScreenState extends State<CourseListScreen> {
                           onPressed: () async {
                             await Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) => CourseFormScreen(course: c),
+                                builder: (_) => ClassFormScreen(
+                                  assignedClass: assignedClass,
+                                ),
                               ),
                             );
                             await _refresh();
@@ -94,7 +96,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _confirmDelete(c),
+                          onPressed: () => _confirmDelete(assignedClass),
                         ),
                       ],
                     ),
@@ -110,19 +112,19 @@ class _CourseListScreenState extends State<CourseListScreen> {
         onPressed: () async {
           await Navigator.of(
             context,
-          ).push(MaterialPageRoute(builder: (_) => const CourseFormScreen()));
+          ).push(MaterialPageRoute(builder: (_) => const ClassFormScreen()));
           await _refresh();
         },
       ),
     );
   }
 
-  Future<void> _confirmDelete(Course course) async {
+  Future<void> _confirmDelete(AssignedClass assignedClass) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Confirmar Exclusão'),
-        content: Text('Deseja excluir "${course.name}"?'),
+        content: Text('Deseja excluir "${assignedClass.name}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -138,11 +140,11 @@ class _CourseListScreenState extends State<CourseListScreen> {
     );
 
     if (confirm == true) {
-      await CourseStorage.deleteCourse(course.id!);
+      await ClassStorage.deleteClass(assignedClass.id!);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Curso excluído!'),
+            content: Text('Turma excluída!'),
             backgroundColor: Colors.green,
           ),
         );

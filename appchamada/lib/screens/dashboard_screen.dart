@@ -13,18 +13,19 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'lesson_registration_screen.dart';
-import 'subject_registration_screen.dart';
 import 'history_screen.dart';
 import '../services/consolidation_service.dart';
 import '../services/csv_export_service.dart';
 import '../widgets/sync_indicator.dart';
 import 'login_screen.dart';
+import 'subject_list_screen.dart';
+import 'class_room_list_screen.dart';
+import 'class_list_screen.dart';
+import 'lesson_list_screen.dart';
 
 // Importando os modelos que criamos
 import '../model/user.dart';
 import '../model/user_type.dart';
-import 'class_registration_screen.dart';
 import 'course_list_screen.dart';
 // ... outros modelos que você precisar
 
@@ -91,14 +92,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     switch (widget.loggedInUser.userType) {
       case UserType.STUDENT:
-        student = Student(id: 1);
+        student = Student(id: widget.loggedInUser.id ?? 1);
         student?.assignedClass = AssignedClass(id: 1);
+        _loadLessons();
         break;
       default:
         break;
     }
-
-    _loadLessons();
   }
 
   Future<void> _loadLessons() async {
@@ -161,24 +161,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _loadRollCallAttendance() async {
-    final savedRollCalls =
-        await RollCallStorage.getRollCalls(); // Lista de RollCall
+    // Só carrega se for aluno
+    if (student == null) return;
+
+    final savedRollCalls = await RollCallStorage.getRollCalls();
+
+    if (savedRollCalls == null || savedRollCalls.isEmpty) return;
 
     setState(() {
       for (var round in _rounds) {
-        final matchingRollCall = savedRollCalls?.cast<RollCall>().firstWhere(
-          (rc) =>
-              rc.lesson.id == round.lesson.id && rc.student.id == student?.id,
-          orElse: () => RollCall(
-            id: -1, // id inválido só para placeholder
-            lesson: round.lesson,
-            student: student!,
-            presence: false,
-          ),
-        );
+        try {
+          final matchingRollCall = savedRollCalls.cast<RollCall>().firstWhere(
+            (rc) =>
+                rc.lesson.id == round.lesson.id && rc.student.id == student?.id,
+            orElse: () => RollCall(
+              id: -1,
+              lesson: round.lesson,
+              student: student!,
+              presence: false,
+            ),
+          );
 
-        if (matchingRollCall != null && matchingRollCall.presence == true) {
-          _attendanceStatus[round.roundNumber] = true;
+          if (matchingRollCall.id != -1 && matchingRollCall.presence == true) {
+            _attendanceStatus[round.roundNumber] = true;
+          }
+        } catch (e) {
+          // Ignora erro se não encontrar
+          continue;
         }
       }
     });
@@ -572,7 +581,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => const ClassRegistrationScreen(),
+                    builder: (context) => const ClassRoomListScreen(),
                   ),
                 );
               },
@@ -594,36 +603,49 @@ class _DashboardScreenState extends State<DashboardScreen> {
               },
             ),
           ),
-          const SizedBox(height: 16),
-          // Aqui podemos adicionar mais cards para outras funcionalidades administrativas
+          const SizedBox(height: 8),
           Card(
             child: ListTile(
               leading: const Icon(Icons.class_),
-              title: const Text('Gerenciar Aulas'),
-              subtitle: const Text('Cadastrar e agendar novas aulas'),
+              title: const Text('Gerenciar Turmas'),
+              subtitle: const Text('Cadastrar e gerenciar turmas'),
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => const LessonRegistrationScreen(),
+                    builder: (context) => const ClassListScreen(), // ⬅️ NOVO
                   ),
                 );
               },
             ),
           ),
-
-          const SizedBox(height: 16),
-
+          const SizedBox(height: 8),
           Card(
             child: ListTile(
-              leading: const Icon(Icons.book_outlined),
+              leading: const Icon(Icons.book),
               title: const Text('Gerenciar Matérias'),
-              subtitle: const Text('Cadastrar novas matérias no sistema'),
+              subtitle: const Text('Cadastrar e gerenciar disciplinas'),
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => const SubjectRegistrationScreen(),
+                    builder: (context) => const SubjectListScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.calendar_today),
+              title: const Text('Gerenciar Aulas'),
+              subtitle: const Text('Ver, cadastrar e agendar aulas'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const LessonListScreen(), // ⬅️ NOVO
                   ),
                 );
               },
